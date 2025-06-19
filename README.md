@@ -2,7 +2,9 @@
 
 一个预约系统
 ### pre-commit 挻多好处，检查提交前的问题，代码格式
-
+```
+pre-commit install
+```
 
 ## How to use it
 
