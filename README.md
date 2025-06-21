@@ -49,6 +49,7 @@ sh ./start_postgres.sh
 
 ### 引用  sqlx
 ```bash
+cargo add dotenvy -p reservation
 cargo add sqlx --features postgres -p reservation
 ```
 ### 添加 sqlx 的client
@@ -75,3 +76,24 @@ sqlx migrate run
 ```bash
 pgcli -U root -d reservation
 ```
+
+
+### 进行 reservation 模块的写法
+```bash
+# 引用 abi 到 reservation 模块
+cargo add abi -p reservation
+# 添加 thiserr 通过 deriver 生成
+cargo add thiserror -p reservation
+```
+
+### 添加 trait 的async 支持
+```bash
+cargo add async-trait -p reservation
+```
+### 添加 chrono 的 时间转换库
+```bash
+cargo add chrono --features serde -p reservation
+cargo add chrono --features serde -p abi
+```
+
+### 为了跳过sql::query!

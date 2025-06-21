@@ -1,6 +1,7 @@
 fn main() {
     tonic_build::configure()
         .build_server(false)
+        .type_attribute("reservation.ReservationStatus", "#[derive(sqlx::Type)]")
         .out_dir("src/pb")
         .compile_protos(&["protos/reservation.proto"], &["protos"])
         .unwrap();
