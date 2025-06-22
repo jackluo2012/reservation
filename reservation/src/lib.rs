@@ -1,9 +1,7 @@
-mod error;
 mod manager;
 
-use abi::{self, ReservationId};
+use abi::{self, ReservationId, error::Error as ReservationError};
 use async_trait::async_trait;
-pub use error::ReservationError;
 use sqlx::PgPool;
 
 // 定义一个struct来表示预
