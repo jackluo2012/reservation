@@ -25,8 +25,6 @@ pub trait Rsvp {
     ) -> Result<abi::Reservation, ReservationError>;
     // 获取预订信息
     async fn get(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError>;
-    // 获取所有预订信息
-    async fn get_all(&self) -> Result<Vec<abi::Reservation>, ReservationError>;
     // 获取指定用户的预订信息
     async fn query(
         &self,

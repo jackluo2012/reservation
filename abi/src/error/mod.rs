@@ -10,6 +10,8 @@ pub enum Error {
     InvalidUserId(String),
     #[error("Invalid sesouce id: {0}")]
     InvalidResourceId(String),
+    #[error("Invalid reservation id: {0}")]
+    InvalidReservationId(i64),
     #[error("Unknown error occurred")]
     Unknown,
 }

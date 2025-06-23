@@ -121,13 +121,17 @@ cargo add chrono --features serde -p abi
 
 ### 为了跳过 sql::query!
 
-这个用宏定义，还没有找到原因，先不用宏，感觉应该是 schema_dsl 宏定义的问题
+因为我用的不是 public schema 这个用宏定义，还没有找到原因，先不用宏，感觉应该是 schema_dsl 宏定义的问题，所以要带上 schema_dsl,rsvp.reservation 这样的数据库表名。
+
+````bash
+
+``
 
 ### 添加 sqlx 测试，提供 tokio 运行环境
 
 ```bash
 cargo add tokio --features full -p reservation --dev
-```
+````
 
 ### 的 abi 下面创建 type 目录
 

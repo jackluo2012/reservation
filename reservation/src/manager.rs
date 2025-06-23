@@ -1,4 +1,5 @@
 use crate::{ReservationManager, Rsvp};
+// use abi::Validate; // Bring the trait with `validate` into scope
 use abi::{self, ReservationId, error::Error as ReservationError};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -40,31 +41,42 @@ impl Rsvp for ReservationManager {
         Ok(rsvp)
     }
 
-    async fn change_status(
-        &self,
-        _id: ReservationId,
-    ) -> Result<abi::Reservation, ReservationError> {
+    async fn change_status(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError> {
         // 实现状态变更逻辑
-        unimplemented!()
+        // if current status is pending, change to confirmed,otherwise, change to pending
+        let rsvp: abi::Reservation = sqlx::query_as(
+            "UPDATE rsvp.reservations SET status = 'confirmed' WHERE id = $1 AND status = 'pending' RETURNING *"
+        ).bind(id).fetch_one(&self.pool).await?;
+        Ok(rsvp)
     }
 
     async fn update_note(
         &self,
-        _id: ReservationId,
-        _note: String,
+        id: ReservationId,
+        note: String,
     ) -> Result<abi::Reservation, ReservationError> {
         // 实现更新备注逻辑
-        unimplemented!()
+
+        let rsvp: abi::Reservation =
+            sqlx::query_as("UPDATE rsvp.reservations SET note = $1 WHERE id = $2 RETURNING *")
+                .bind(note)
+                .bind(id)
+                .fetch_one(&self.pool)
+                .await?;
+
+        Ok(rsvp)
     }
 
-    async fn get(&self, _id: ReservationId) -> Result<abi::Reservation, ReservationError> {
+    async fn get(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError> {
         // 实现获取单个预订信息逻辑
-        unimplemented!()
-    }
+        // id.validate()?;
+        let rsvp: abi::Reservation =
+            sqlx::query_as("SELECT * FROM rsvp.reservations WHERE id = $1")
+                .bind(id)
+                .fetch_one(&self.pool)
+                .await?;
 
-    async fn get_all(&self) -> Result<Vec<abi::Reservation>, ReservationError> {
-        // 实现获取所有预订信息逻辑
-        unimplemented!()
+        Ok(rsvp)
     }
 
     async fn query(
@@ -75,9 +87,14 @@ impl Rsvp for ReservationManager {
         unimplemented!()
     }
 
-    async fn cancel(&self, _id: ReservationId) -> Result<abi::Reservation, ReservationError> {
+    async fn cancel(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError> {
         // 实现取消预订逻辑
-        unimplemented!()
+        let rsvp: abi::Reservation =
+            sqlx::query_as("DELETE FROM rsvp.reservations WHERE id = $1 RETURNING *")
+                .bind(id)
+                .fetch_one(&self.pool)
+                .await?;
+        Ok(rsvp)
     }
 }
 
@@ -138,6 +155,23 @@ mod tests {
         let _rsvp1 = manager.reserve(rsvp1).await.unwrap();
         let err = manager.reserve(rsvp2).await.unwrap();
         println!("Error: {:?}", err);
+        Ok(())
+    }
+
+    #[sqlx::test(migrations = "../migrations")]
+    async fn reserve_change_status_should_work(pool: PgPool) -> sqlx::Result<()> {
+        let manager = ReservationManager::new(pool);
+        let changersvp = Reservation::new_pending(
+            "user1".to_string(),
+            "room1".to_string(),
+            "2025-10-09T16:00:00Z".parse::<DateTime<Utc>>().unwrap(),
+            "2025-10-18T12:00:00Z".parse::<DateTime<Utc>>().unwrap(),
+            "world".to_string(),
+        );
+        let rsvp = manager.reserve(changersvp).await.unwrap();
+
+        let changersvp = manager.change_status(rsvp.id).await.unwrap();
+        assert_eq!(changersvp.status, abi::ReservationStatus::Confirmed as i32);
         Ok(())
     }
 }
