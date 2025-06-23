@@ -145,3 +145,15 @@ mkdir abi/src/types
 cargo nextest run
 cargo nextest run --nocapture
 ```
+
+### 添加 builder 构建器模式，crate
+
+```bash
+cargo add derive_builder -p abi
+```
+
+### 引用 prost-types
+
+```bash
+cargo add prost-types -p reservation --dev
+```

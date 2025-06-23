@@ -88,7 +88,7 @@ pub struct GetResponse {
     pub reservation: ::core::option::Option<Reservation>,
 }
 /// query reservations with user id, resource id, start time, end time, and status
-#[derive(Clone, PartialEq, ::prost::Message)]
+#[derive(derive_builder::Builder, Clone, PartialEq, ::prost::Message)]
 pub struct ReservationQuery {
     /// resource id for the reservation query. If empty, query all resources
     #[prost(string, tag = "1")]
@@ -101,6 +101,7 @@ pub struct ReservationQuery {
     pub status: i32,
     /// start time for the reservation query, if 0, use Infinity for start time
     #[prost(message, optional, tag = "4")]
+    #[builder(setter(into, strip_option))]
     pub start: ::core::option::Option<::prost_types::Timestamp>,
     /// end time for the reservation query, if 0, use Infinity for end time
     #[prost(message, optional, tag = "5")]

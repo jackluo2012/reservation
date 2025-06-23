@@ -81,10 +81,19 @@ impl Rsvp for ReservationManager {
 
     async fn query(
         &self,
-        _query: abi::ReservationQuery,
+        query: abi::ReservationQuery,
     ) -> Result<Vec<abi::Reservation>, ReservationError> {
         // 实现查询指定用户的预订信息逻辑
-        unimplemented!()
+        let rsvps = sqlx::query_as("SELECT * FROM rsvp.query($1,$2,$3,$4,$5,$6) ")
+            .bind(query.user_id)
+            .bind(query.resource_id)
+            // .bind(query.start)
+            // .bind(query.end)
+            // .bind(query.page)
+            // .bind(query.page_size)
+            .fetch_all(&self.pool)
+            .await?;
+        Ok(rsvps)
     }
 
     async fn cancel(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError> {
