@@ -2,7 +2,7 @@
 
 fn main() {
     tonic_build::configure()
-        .build_server(false)
+        // .build_server(false)
         .type_attribute("reservation.ReservationStatus", "#[derive(sqlx::Type)]")
         .type_attribute(
             "reservation.ReservationQuery",

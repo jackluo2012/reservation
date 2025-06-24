@@ -157,3 +157,9 @@ cargo add derive_builder -p abi
 ```bash
 cargo add prost-types -p reservation --dev
 ```
+
+### 给 reservation-service 包 添加 tonic 服务
+
+```bash
+cargo add tonic -p reservation-service
+```

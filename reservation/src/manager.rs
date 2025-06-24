@@ -4,7 +4,29 @@ use abi::{self, ReservationId, error::Error as ReservationError};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use sqlx::postgres::types::PgRange;
+
+impl ReservationManager {
+    pub fn new(pool: PgPool) -> Self {
+        ReservationManager { pool }
+    }
+
+    pub async fn from_env() -> Result<Self, abi::Error> {
+        dotenvy::dotenv().ok();
+        let max_connections = std::env::var("MAX_CONNECTIONS")
+            .unwrap()
+            .parse::<u32>()
+            .unwrap();
+        let pool = PgPoolOptions::new()
+            .max_connections(max_connections)
+            .connect(&std::env::var("DATABASE_URL").unwrap())
+            .await?;
+
+        PgPool::connect(&std::env::var("DATABASE_URL").unwrap()).await?;
+        Ok(Self::new(pool))
+    }
+}
 
 #[async_trait]
 impl Rsvp for ReservationManager {
@@ -107,12 +129,6 @@ impl Rsvp for ReservationManager {
     }
 }
 
-impl ReservationManager {
-    pub fn new(pool: PgPool) -> Self {
-        ReservationManager { pool }
-    }
-}
-
 #[cfg(test)]
 mod tests {
 
@@ -181,6 +197,29 @@ mod tests {
 
         let changersvp = manager.change_status(rsvp.id).await.unwrap();
         assert_eq!(changersvp.status, abi::ReservationStatus::Confirmed as i32);
+        Ok(())
+    }
+    #[tokio::test]
+    async fn reservation_manager_should_work() -> Result<(), Box<dyn std::error::Error>> {
+        let manager = ReservationManager::from_env().await.unwrap();
+        // 清理表，避免冲突
+        sqlx::query("DELETE FROM rsvp.reservations")
+            .execute(&manager.pool)
+            .await
+            .unwrap();
+
+        //随机插入10条数据
+        for i in 0..10 {
+            let rsvp = abi::Reservation::new_pending(
+                format!("user{}", i),
+                format!("room{}", i),
+                "2025-10-01T15:00:00Z".parse::<DateTime<Utc>>().unwrap(),
+                "2025-10-08T12:00:00Z".parse::<DateTime<Utc>>().unwrap(),
+                "I'll arrive at 3pm.Please help to upgrade to execuitive room if possible."
+                    .to_string(),
+            );
+            manager.reserve(rsvp).await.unwrap();
+        }
         Ok(())
     }
 }

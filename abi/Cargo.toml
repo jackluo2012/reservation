@@ -11,5 +11,6 @@ chrono = { version = "0.4.41", features = ["serde"] }
 sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "postgres", "chrono","macros","uuid"] }
 thiserror = "2.0.12"
 derive_builder = "0.20.2"
+regex = "1.11.1"
 [build-dependencies]
 tonic-build = {version = "0.13", features = ["prost"]}
