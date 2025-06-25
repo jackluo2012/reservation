@@ -23,7 +23,7 @@ pub mod tests {
             nanos: 0,
         };
         let dt = convert_to_utc_time(ts);
-        println!("Converted DateTime: {}", dt);
+        println!("Converted DateTime: {dt}");
         assert_eq!(dt, Utc.with_ymd_and_hms(2021, 10, 1, 7, 20, 0).unwrap());
     }
     #[test]

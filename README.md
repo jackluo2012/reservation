@@ -16,7 +16,7 @@ cargo install typos-cli
 ## How to use it
 
 ```bash
-$ cargo generate --git https://github.com/tyrchen/rust-lib-template
+cargo generate --git https://github.com/tyrchen/rust-lib-template
 ```
 
 ### 生成项目的 abi grpc ,生成的单独的代码，放到一个 crate 里面,生成各种各样的 trait

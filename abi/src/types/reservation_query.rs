@@ -10,10 +10,10 @@ impl Validator for ReservationQuery {
     fn validate(&self) -> Result<(), Error> {
         // ReservationStatus::try_from(self.status);
 
-        if let (Some(start), Some(end)) = (self.start.as_ref(), self.end.as_ref()) {
-            if start.seconds >= end.seconds {
-                return Err(Error::InvalidTime);
-            }
+        if let (Some(start), Some(end)) = (self.start.as_ref(), self.end.as_ref())
+            && start.seconds >= end.seconds
+        {
+            return Err(Error::InvalidTime);
         }
 
         Ok(())

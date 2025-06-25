@@ -483,7 +483,7 @@ pub mod reservation_service_server {
         /// make a reservation
         async fn reserve(
             &self,
-            _request: tonic::Request<super::ReserveRequest>,
+            request: tonic::Request<super::ReserveRequest>,
         ) -> std::result::Result<tonic::Response<super::ReserveResponse>, tonic::Status>;
         /// confirm a pending reservation, if reservation is not pending, do nothing
         async fn confirm(
@@ -493,12 +493,12 @@ pub mod reservation_service_server {
         /// update the reservation note
         async fn update(
             &self,
-            _request: tonic::Request<super::UpdateRequest>,
+            request: tonic::Request<super::UpdateRequest>,
         ) -> std::result::Result<tonic::Response<super::UpdateResponse>, tonic::Status>;
         /// cancel a reservation
         async fn cancel(
             &self,
-            _request: tonic::Request<super::CancelRequest>,
+            request: tonic::Request<super::CancelRequest>,
         ) -> std::result::Result<tonic::Response<super::CancelResponse>, tonic::Status>;
         /// get a reservation by id
         async fn get(
@@ -513,7 +513,7 @@ pub mod reservation_service_server {
         /// query reservations by resource id, user id, status, start time, end time
         async fn query(
             &self,
-            _request: tonic::Request<super::QueryRequest>,
+            request: tonic::Request<super::QueryRequest>,
         ) -> std::result::Result<tonic::Response<Self::queryStream>, tonic::Status>;
         /// filter reservations, order by reservation id
         async fn filter(
@@ -528,7 +528,7 @@ pub mod reservation_service_server {
         /// another system could monitor newly added/confirmed/cancelled reservations
         async fn listen(
             &self,
-            _request: tonic::Request<super::ListenRequest>,
+            request: tonic::Request<super::ListenRequest>,
         ) -> std::result::Result<tonic::Response<Self::listenStream>, tonic::Status>;
     }
     /// Reservation service

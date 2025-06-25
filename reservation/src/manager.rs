@@ -179,7 +179,7 @@ mod tests {
         );
         let _rsvp1 = manager.reserve(rsvp1).await.unwrap();
         let err = manager.reserve(rsvp2).await.unwrap();
-        println!("Error: {:?}", err);
+        println!("Error: {err:?}");
         Ok(())
     }
 
@@ -211,8 +211,8 @@ mod tests {
         //随机插入10条数据
         for i in 0..10 {
             let rsvp = abi::Reservation::new_pending(
-                format!("user{}", i),
-                format!("room{}", i),
+                format!("user{i}"),
+                format!("room{i}"),
                 "2025-10-01T15:00:00Z".parse::<DateTime<Utc>>().unwrap(),
                 "2025-10-08T12:00:00Z".parse::<DateTime<Utc>>().unwrap(),
                 "I'll arrive at 3pm.Please help to upgrade to execuitive room if possible."
