@@ -163,3 +163,9 @@ cargo add prost-types -p reservation --dev
 ```bash
 cargo add tonic -p reservation-service
 ```
+
+### 生成 grpc client 调用 grpc service 的服务测试代码
+
+```bash
+mkdir service/tests
+```

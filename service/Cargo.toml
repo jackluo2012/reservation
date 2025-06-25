@@ -9,3 +9,4 @@ tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 anyhow = "1.0.98"
 abi = { path = "../abi" }
 reservation = { path = "../reservation" }
+chrono = { version = "0.4.41", features = ["serde"] }

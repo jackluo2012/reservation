@@ -1,14 +1,8 @@
-use abi::reservation_service_server::ReservationServiceServer;
-use anyhow::{Error, Ok, Result};
-use reservation_service::RsvpService;
-use tonic::transport::Server;
+use anyhow::{Error, Result};
+use reservation_service::start_server;
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let svc = RsvpService::from_config().await?;
-    let svc = ReservationServiceServer::new(svc);
-    let addr = format!("{}:{}", "127.0.0.1", "50051").parse()?;
-    println!("listening on {addr}");
-    Server::builder().add_service(svc).serve(addr).await?;
-
-    Ok(())
+    let url = String::from("127.0.0.1:50051");
+    start_server(&url).await
 }
