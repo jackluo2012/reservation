@@ -1,11 +1,16 @@
 use crate::{ReservationManager, Rsvp};
 // use abi::Validate; // Bring the trait with `validate` into scope
-use abi::{self, ReservationId, error::Error as ReservationError};
+use abi::{self, ReservationId, ToSql, error::Error as ReservationError};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use futures::StreamExt;
+
 use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::postgres::types::PgRange;
+
+use tokio::sync::mpsc;
+use tracing::warn;
 
 impl ReservationManager {
     pub fn new(pool: PgPool) -> Self {
@@ -104,18 +109,33 @@ impl Rsvp for ReservationManager {
     async fn query(
         &self,
         query: abi::ReservationQuery,
-    ) -> Result<Vec<abi::Reservation>, ReservationError> {
-        // 实现查询指定用户的预订信息逻辑
-        let rsvps = sqlx::query_as("SELECT * FROM rsvp.query($1,$2,$3,$4,$5,$6) ")
-            .bind(query.user_id)
-            .bind(query.resource_id)
-            // .bind(query.start)
-            // .bind(query.end)
-            // .bind(query.page)
-            // .bind(query.page_size)
-            .fetch_all(&self.pool)
-            .await?;
-        Ok(rsvps)
+    ) -> mpsc::Receiver<Result<abi::Reservation, abi::Error>> {
+        let pool = self.pool.clone();
+        let (tx, rx) = mpsc::channel::<Result<abi::Reservation, abi::Error>>(128);
+
+        tokio::spawn(async move {
+            let sql = query.to_sql();
+            let mut rsvps = sqlx::query_as::<_, abi::Reservation>(&sql).fetch(&pool);
+            while let Some(ret) = rsvps.next().await {
+                match ret {
+                    Ok(r) => {
+                        if tx.send(Ok(r)).await.is_err() {
+                            // rx is dropped, so client disconnected
+                            break;
+                        }
+                    }
+                    Err(e) => {
+                        warn!("Query error: {:?}", e);
+                        if tx.send(Err(e.into())).await.is_err() {
+                            // rx is dropped, so client disconnected
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        rx
     }
 
     async fn cancel(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError> {
@@ -138,16 +158,7 @@ mod tests {
     #[sqlx::test(migrations = "../migrations")]
     async fn reserve_should_work_for_valid_window(pool: PgPool) -> sqlx::Result<()> {
         let manager = ReservationManager::new(pool.clone());
-        // let start = "2025-10-01T15:00:00Z".parse::<DateTime<Utc>>().unwrap();
-        // let end = "2025-10-08T12:00:00Z".parse::<DateTime<Utc>>().unwrap();
 
-        // let rsvp = abi::Reservation::new_pending(
-        //     "jackluo".to_string(),
-        //     "ocean-view-room-819".to_string(),
-        //     start,
-        //     end,
-        //     "I'll arrive at 3pm.Please help to upgrade to execuitive room if possible.".to_string(),
-        // );
         let rsvp = abi::Reservation::new_pending(
             "jackluo",
             "ocean-view-room-819",
@@ -221,5 +232,20 @@ mod tests {
             manager.reserve(rsvp).await.unwrap();
         }
         Ok(())
+    }
+    #[tokio::test]
+    async fn query_should_work() {
+        // let manager = ReservationManager::from_env().await.unwrap();
+        // let start_time_chrono = "2025-10-01T15:00:00Z".parse::<DateTime<Utc>>().unwrap();
+
+        // let query = ReservationQueryBuilder::default()
+        //     .user_id("jackluo".to_string())
+        //     .resource_id("ocean-view-room-819".to_string())
+        //     .status(abi::ReservationStatus::Pending as i32)
+        //     .start(start_time)
+        //     .build()
+        //     .unwrap();
+        // let mut rx = manager.query(query).await;
+        // assert_eq!(rx.recv().await, None);
     }
 }

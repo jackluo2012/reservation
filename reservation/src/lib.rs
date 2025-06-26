@@ -3,6 +3,7 @@ mod manager;
 use abi::{self, ReservationId, error::Error as ReservationError};
 use async_trait::async_trait;
 use sqlx::PgPool;
+use tokio::sync::mpsc;
 
 // 定义一个struct来表示预
 #[derive(Debug, Clone)]
@@ -29,7 +30,7 @@ pub trait Rsvp {
     async fn query(
         &self,
         query: abi::ReservationQuery,
-    ) -> Result<Vec<abi::Reservation>, ReservationError>;
+    ) -> mpsc::Receiver<Result<abi::Reservation, abi::Error>>;
     // 取消预订
     async fn cancel(&self, id: ReservationId) -> Result<abi::Reservation, ReservationError>;
 }
